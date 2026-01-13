@@ -1,6 +1,6 @@
 USTH Machine Learning in Medicine 2026
 ==================================
 
-* Your name here
-* Your ID here
-* Your team ID here
+* Nguyen Dinh Lien Thanh
+* 22BA13288
+* Your team ID here - Update later....
