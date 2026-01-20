@@ -1,0 +1,134 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{booktabs}
+
+\title{ Practical Work 1 - Heartbeat Classification: Comparison between Random Forest and 1D-CNN}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Electrocardiogram (ECG) signals provide a reliable means of assessing the functionality of the cardiovascular system. 
+In this paper, I will implement and compare two approaches on the dataset downloading from kaggle - the ECG Heartbeat Categorization Dataset: \\
+1) Machine Learning approach using RandomForest optimized with GridSearchCV \\ 
+2) Deep Learning approach using a 1D-CNN combined with SMOTE to specifically address the class imbalance problem
+
+\section{Dataset Overview}
+The dataset consists of two parts:
+\begin{itemize}
+    \item Training set: 87,554 samples with 187 features and 1 label column
+    \item Testing set: 21,892 samples
+\end{itemize}
+
+The heartbeat categories are:
+\begin{enumerate}
+    \item Normal
+    \item Supraventricular
+    \item Ventricular
+    \item Fusion
+    \item Unknown
+\end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{output1.png}
+    \caption{Class Distribution in Training Set}
+    \label{fig:class_distribution}
+\end{figure}
+\newpage
+\section{Class Distribution}
+The training set exhibits significant class imbalance:
+\begin{itemize}
+    \item Normal: 72,471 samples
+    \item Supraventricular: 2,223 samples
+    \item Ventricular: 5,788 samples
+    \item Fusion: 641 samples
+    \item Unknown: 6,431 samples
+\end{itemize}
+
+\section{Methodology}
+
+\subsection{Approach 1: Random Forest with GridSearchCV}
+A RandomForestClassifier was trained using GridSearchCV to optimize hyperparameters. 
+To address class imbalance during training, the scoring metric f1\_weighted was applied.
+The best parameters found were:
+\begin{itemize}
+    \item n\_estimators: 100
+    \item max\_depth: None
+    \item min\_samples\_split: 5
+\end{itemize}
+
+\subsection{Approach 2: 1D-CNN with SMOTE}
+To improve the recall of minority classes (Supraventricular and Fusion), I applied SMOTE to balance the training dataset. 
+Subsequently, a 1D-Convolutional Neural Network (CNN) was designed to extract temporal features from the ECG signals efficiently.
+\newpage
+\section{Results}
+
+\subsection{Random Forest Method Performance}
+The Random Forest model achieved a test accuracy of \textbf{97.42\%}. However, as shown in table below, the model struggled with minority classes - likely due to the problem of class imbalance
+
+\begin{table}[htbp]
+    \centering
+    \caption{Random Forest Classification Report}
+    \label{tab:rf_results}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} & \textbf{Support} \\
+        \midrule
+        Normal & 0.97 & 1.00 & 0.99 & 18118 \\
+        Supraventricular & 0.95 & \textbf{0.60} & 0.74 & 556 \\
+        Ventricular & 0.98 & 0.89 & 0.93 & 1448 \\
+        Fusion & 0.82 & \textbf{0.61} & 0.70 & 162 \\
+        Unknown & 1.00 & 0.95 & 0.97 & 1608 \\
+        \midrule
+        \textbf{Accuracy} & & & \textbf{0.97} & 21892 \\
+        Weighted Avg & 0.97 & 0.97 & 0.97 & 21892 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\subsection{Confusion Matrix (Random Forest)}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{output3.png}
+    \caption{Confusion Matrix of Random Fores Model}
+    \label{fig:confusion_matrix_rf}
+\end{figure}
+\newpage
+\subsection{CNN Method Performance}
+The CNN model with SMOTE achieved a higher test accuracy of \textbf{98.36\%}. More importantly, the Recall for minority classes improved significantly: 
+
+\begin{table}[htbp]
+    \centering
+    \caption{CNN Classification Report}
+    \label{tab:cnn_results}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-score} & \textbf{Support} \\
+        \midrule
+        Normal & 0.99 & 0.99 & 0.99 & 18118 \\
+        Supraventricular & 0.84 & \textbf{0.82} & 0.83 & 556 \\
+        Ventricular & 0.98 & 0.94 & 0.96 & 1448 \\
+        Fusion & 0.72 & \textbf{0.83} & 0.77 & 162 \\
+        Unknown & 0.99 & 0.99 & 0.99 & 1608 \\
+        \midrule
+        \textbf{Accuracy} & & & \textbf{0.98} & 21892 \\
+        Weighted Avg & 0.98 & 0.98 & 0.98 & 21892 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+\subsection{Confusion Matrix (CNN)}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{output4.png}
+    \caption{Confusion Matrix of CNN Model (with SMOTE)}
+    \label{fig:confusion_matrix_cnn}
+\end{figure}
+\section{Conclusion}
+While Random Forest with GridSearchCV provided strong overall accuracy (97.42\%), it showed limitations in detecting rare classes (Recall $\approx$ 0.60).
+By applying SMOTE and using a Deep Learning architecture (1D-CNN), I improved the overall accuracy to \textbf{98.36\%} and significantly boosted the recall for 'Supraventricular' (0.60 $\to$ 0.82) and 'Fusion' (0.61 $\to$ 0.83) categories. This demonstrates that applying oversampling methods is crucial for datasets having imbalance problem.
+
+\end{document}
