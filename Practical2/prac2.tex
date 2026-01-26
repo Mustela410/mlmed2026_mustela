@@ -1,0 +1,107 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{booktabs}
+
+\title{Practical Work 2 - Measurement of Fetal Head Circumference}
+
+\author{Nguyen Dinh Lien Thanh - 22BA13288}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Head circumference (HC) is basically one of the basic biometric parameters used to assess fetal size. HC together with biparietal diameter (BPD), abdominal circumference (AC), and femur length (FL) are computed to produce an estimate of fetal weight.
+In this paper, I will implement Machine Learning approach using Feature-based Regression.
+
+\section{Dataset Overview}
+The dataset contains ultrasound images in the training\_set folder along with a CSV file for HC measurements and pixel size data. Since the testing set lacks HC values, I split the training set into training and testing subsets.
+
+\begin{itemize}
+    \item Training set: 999 images with annotations
+    \item CSV file: image names, pixel sizes, and HC values
+\end{itemize}
+
+\section{Methodology: Feature-based Regression}
+Instead of using raw pixel values, I extract geometric features from annotation masks. This approach uses domain knowledge about fetal head shape.
+
+\subsection{Feature Extraction}
+From each annotation mask, I extract 13 geometric features using OpenCV:
+
+\textbf{Size measurements:}
+\begin{itemize}
+    \item Area (mm²), Perimeter (mm)
+    \item Bounding box width and height (mm)
+\end{itemize}
+
+\textbf{Shape descriptors:}
+\begin{itemize}
+    \item Solidity: ratio of contour area to convex hull area
+    \item Extent: ratio of contour area to bounding box area
+    \item Circularity: how close the shape is to a perfect circle
+    \item Eccentricity: deviation from circular shape
+\end{itemize}
+
+\textbf{Ellipse fitting:}
+\begin{itemize}
+    \item Major and minor axis lengths (mm)
+\end{itemize}
+
+\textbf{Moments:}
+\begin{itemize}
+    \item Hu moments (mu20, mu02) for shape distribution
+\end{itemize}
+
+These features capture the geometric properties of the fetal head, which correlate with HC.
+\newpage
+\subsection{Model Training}
+I trained four regression models using GridSearchCV with 5-fold cross-validation:
+
+\begin{itemize}
+    \item \textbf{Random Forest:} n\_estimators=[50, 100, 200], max\_depth=[None, 10, 20]
+    \item \textbf{Gradient Boosting:} n\_estimators=[50, 100, 200], learning\_rate=[0.01, 0.1, 0.2]
+    \item \textbf{Ridge Regression:} alpha=[0.1, 1.0, 10.0, 100.0]
+    \item \textbf{SVR:} C=[0.1, 1.0, 10.0], kernel=[rbf, linear]
+\end{itemize}
+
+Ridge and SVR use StandardScaler for feature normalization.
+
+\section{Results}
+
+\subsection{Performance Comparison}
+Table \ref{tab:model_comparison} shows the test performance of all models.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Model Performance Comparison}
+    \label{tab:model_comparison}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Model} & \textbf{MAE (mm)} & \textbf{R²} \\
+        \midrule
+        Random Forest & 5.313580 & 0.952829 \\
+        Gradient Boosting & 6.693080 & 0.925387 \\
+        Ridge Regression & 7.708294 & 0.931403 \\
+        SVR & 5.949640 & 0.936685 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Feature Importance}
+Random Forest feature importance analysis shows that perimeter and area are the most important features for predicting HC. This makes sense because HC is basically the perimeter of the fetal head boundary.
+
+The top 3 features are:
+\begin{enumerate}
+    \item bbox width (mm): 0.536359
+    \item major axis (mm): 0.296969
+    \item perimeter (mm): 0.038068
+\end{enumerate}
+
+\section{Conclusion}
+Feature-based regression achieves MAE around 5 - 7 mm, which is better than pixel-based Random Forest (27mm) which I have tried before. This shows that extracting geometric features from segmentation masks is more effective than using raw pixels.
+
+However, this method still requires annotation masks. For new images without annotations, a U-Net segmentation model would be needed first.
+
+\end{document}
